@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/mdigger/goldmark-attributes"
+	"github.com/mdigger/goldmark-text-replacer"
 	"github.com/richardwilkes/toolbox/atexit"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -28,12 +29,15 @@ func main() {
 			parser.WithAutoHeadingID(),
 			parser.WithAttribute(),
 		),
-		goldmark.WithRendererOptions(html.WithUnsafe()),
+		goldmark.WithRendererOptions(
+			html.WithUnsafe(),
+		),
 		goldmark.WithExtensions(
 			extension.GFM,
 			extension.NewTypographer(),
 			extension.Footnote,
 			attributes.Extension,
+			replacer.New(), // Not currently replacing anything...
 		),
 	)
 	for _, p := range cl.Parse(os.Args[1:]) {
