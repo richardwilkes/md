@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/mdigger/goldmark-attributes"
 	"github.com/richardwilkes/toolbox/atexit"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -32,7 +33,9 @@ func main() {
 			extension.GFM,
 			extension.NewTypographer(),
 			extension.Footnote,
-		))
+		),
+		attributes.Enable,
+	)
 	for _, p := range cl.Parse(os.Args[1:]) {
 		if filepath.Ext(p) != ".md" {
 			jot.Warn("skipping non-markdown file: " + p)
