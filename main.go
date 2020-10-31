@@ -33,8 +33,8 @@ func main() {
 			extension.GFM,
 			extension.NewTypographer(),
 			extension.Footnote,
+			attributes.Extension,
 		),
-		attributes.Enable,
 	)
 	for _, p := range cl.Parse(os.Args[1:]) {
 		if filepath.Ext(p) != ".md" {
