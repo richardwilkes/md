@@ -97,7 +97,25 @@ func (p *processor) markdownToHTML() ([]byte, error) {
 			extension.NewTypographer(),
 			extension.Footnote,
 			attributes.Extension,
-			replacer.New(), // Not currently replacing anything...
+			replacer.New(
+				"^2^", "&sup2;",
+				"^3^", "&sup3;",
+				"!1/2!", "&frac12;",
+				"!1/3!", "&frac13;",
+				"!1/4!", "&frac14;",
+				"!1/5!", "&frac15;",
+				"!1/6!", "&frac16;",
+				"!1/8!", "&frac18;",
+				"!2/3!", "&frac23;",
+				"!2/5!", "&frac25;",
+				"!3/4!", "&frac34;",
+				"!3/5!", "&frac35;",
+				"!3/8!", "&frac38;",
+				"!4/5!", "&frac45;",
+				"!5/6!", "&frac56;",
+				"!5/8!", "&frac58;",
+				"!7/8!", "&frac78;",
+			),
 		),
 	)
 	var buffer bytes.Buffer
