@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -18,14 +19,14 @@ func main() {
 	cmdline.CopyrightYears = "2020"
 	cmdline.CopyrightHolder = "Richard A. Wilkes"
 	cl := cmdline.New(true)
-	m, err := md.New()
-	jot.FatalIfErr(err)
 	for _, p := range cl.Parse(os.Args[1:]) {
 		if filepath.Ext(p) != ".md" {
 			jot.Warn("skipping non-markdown file: " + p)
 			continue
 		}
-		jot.FatalIfErr(m.ConvertFileToHTML(p, fs.TrimExtension(p)+".html"))
+		data, err := md.MarkdownToHTML(p)
+		jot.FatalIfErr(err)
+		jot.FatalIfErr(ioutil.WriteFile(fs.TrimExtension(p)+".html", data, 0644))
 	}
 	atexit.Exit(0)
 }
