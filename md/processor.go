@@ -4,11 +4,16 @@ import (
 	"bytes"
 	"html"
 	"io/ioutil"
+	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 
 	attributes "github.com/mdigger/goldmark-attributes"
 	replacer "github.com/mdigger/goldmark-text-replacer"
 	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/xio"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
@@ -16,15 +21,18 @@ import (
 )
 
 var (
-	includeDirective = ([]byte)(":include:")
-	cssDirective     = ([]byte)(":css:")
-	titleDirective   = ([]byte)(":title:")
+	includeDirective      = []byte(":include:")
+	includeRegexDirective = []byte(":include*:")
+	cssDirective          = []byte(":css:")
+	titleDirective        = []byte(":title:")
 )
 
 // MarkdownToHTML converts the specified markdown file into HTML, processing it for include, css, and title directives
 // prior to processing it for markdown.
 func MarkdownToHTML(file string) ([]byte, error) {
-	doc := &processor{}
+	doc := &processor{
+		cssMap: make(map[string]bool),
+	}
 	if err := doc.include(file); err != nil {
 		return nil, err
 	}
@@ -45,7 +53,6 @@ func (p *processor) include(path string) error {
 		return errs.Wrap(err)
 	}
 	path = filepath.Dir(path)
-	p.cssMap = make(map[string]bool)
 	for len(data) > 0 {
 		var line []byte
 		if i := bytes.IndexByte(data, '\n'); i >= 0 {
@@ -65,6 +72,16 @@ func (p *processor) include(path string) error {
 				return err
 			}
 			p.depth--
+		case bytes.HasPrefix(line, includeRegexDirective):
+			p.depth++
+			parts := strings.SplitN(string(line[len(includeRegexDirective):]), "|", 2)
+			if len(parts) != 2 {
+				return errs.Newf("invalid %s directive: %s", includeRegexDirective, line)
+			}
+			if err = p.includeRegex(filepath.Join(path, parts[0]), parts[1]); err != nil {
+				return err
+			}
+			p.depth--
 		case bytes.HasPrefix(line, cssDirective):
 			css := filepath.Join(path, string(line[len(cssDirective):]))
 			if !p.cssMap[css] {
@@ -78,6 +95,38 @@ func (p *processor) include(path string) error {
 		default:
 			p.data.Write(line)
 			p.data.WriteByte('\n')
+		}
+	}
+	return nil
+}
+
+func (p *processor) includeRegex(dir, pattern string) error {
+	regex, err := regexp.Compile(pattern)
+	if err != nil {
+		return errs.Wrap(err)
+	}
+	var f *os.File
+	if f, err = os.Open(dir); err != nil {
+		return errs.Wrap(err)
+	}
+	defer xio.CloseIgnoringErrors(f)
+	var fis []os.FileInfo
+	if fis, err = f.Readdir(0); err != nil {
+		return errs.Wrap(err)
+	}
+	names := make([]string, 0, len(fis))
+	for _, fi := range fis {
+		if !fi.IsDir() {
+			name := fi.Name()
+			if strings.HasSuffix(strings.ToLower(name), ".md") && regex.MatchString(name) {
+				names = append(names, name)
+			}
+		}
+	}
+	txt.SortStringsNaturalAscending(names)
+	for _, name := range names {
+		if err = p.include(filepath.Join(dir, name)); err != nil {
+			return err
 		}
 	}
 	return nil

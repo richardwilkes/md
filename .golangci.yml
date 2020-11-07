@@ -93,6 +93,7 @@ issues:
     - "G301: Expect directory permissions to be 0750 or less"
     - "G302: Expect file permissions to be 0600 or less"
     - "G304: Potential file inclusion via variable"
+    - "G306: Expect WriteFile permissions to be 0600 or less"
     - "G104: Errors unhandled"
     - "G204: Subprocess launched with variable"
   exclude-rules:
