@@ -147,6 +147,7 @@ func (p *processor) markdownToHTML() ([]byte, error) {
 			extension.Footnote,
 			attributes.Extension,
 			replacer.New(
+				"^1^", "&sup1;",
 				"^2^", "&sup2;",
 				"^3^", "&sup3;",
 				"!1/2!", "&frac12;",
