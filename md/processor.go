@@ -24,6 +24,7 @@ var (
 	includeDirective      = []byte(":include:")
 	includeRegexDirective = []byte(":include*:")
 	cssDirective          = []byte(":css:")
+	inlinecssDirective    = []byte(":inlinecss")
 	titleDirective        = []byte(":title:")
 )
 
@@ -40,11 +41,12 @@ func MarkdownToHTML(file string) ([]byte, error) {
 }
 
 type processor struct {
-	css    []string
-	cssMap map[string]bool
-	title  string
-	data   bytes.Buffer
-	depth  int
+	css       []string
+	cssMap    map[string]bool
+	title     string
+	data      bytes.Buffer
+	depth     int
+	inlineCSS bool
 }
 
 func (p *processor) include(path string) error {
@@ -88,6 +90,8 @@ func (p *processor) include(path string) error {
 				p.cssMap[css] = true
 				p.css = append(p.css, css)
 			}
+		case bytes.HasPrefix(line, inlinecssDirective):
+			p.inlineCSS = true
 		case bytes.HasPrefix(line, titleDirective):
 			if p.depth == 0 || p.title == "" {
 				p.title = string(line[len(titleDirective):])
@@ -178,10 +182,24 @@ func (p *processor) markdownToHTML() ([]byte, error) {
 	<title>`)
 	buffer.WriteString(html.EscapeString(p.title))
 	buffer.WriteString("</title>\n")
-	for _, css := range p.css {
-		buffer.WriteString(`	<link rel="stylesheet" type="text/css" href="`)
-		buffer.WriteString(css)
-		buffer.WriteString("\">\n")
+	if len(p.css) > 0 {
+		if p.inlineCSS {
+			buffer.WriteString("	<style>\n")
+			for _, css := range p.css {
+				data, err := ioutil.ReadFile(css)
+				if err != nil {
+					return nil, errs.Wrap(err)
+				}
+				buffer.Write(data)
+			}
+			buffer.WriteString("	</style>\n")
+		} else {
+			for _, css := range p.css {
+				buffer.WriteString(`	<link rel="stylesheet" type="text/css" href="`)
+				buffer.WriteString(css)
+				buffer.WriteString("\">\n")
+			}
+		}
 	}
 	buffer.WriteString("</head>\n<body>\n")
 	if err := md.Convert(p.data.Bytes(), &buffer); err != nil {
