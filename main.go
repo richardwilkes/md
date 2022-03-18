@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -16,7 +15,7 @@ func main() {
 	cmdline.AppName = "MarkDown"
 	cmdline.AppCmdName = "md"
 	cmdline.License = "Mozilla Public License, version 2.0"
-	cmdline.CopyrightYears = "2020"
+	cmdline.CopyrightYears = "2020-2022"
 	cmdline.CopyrightHolder = "Richard A. Wilkes"
 	cl := cmdline.New(true)
 	for _, p := range cl.Parse(os.Args[1:]) {
@@ -26,7 +25,7 @@ func main() {
 		}
 		data, err := md.MarkdownToHTML(p)
 		jot.FatalIfErr(err)
-		jot.FatalIfErr(ioutil.WriteFile(fs.TrimExtension(p)+".html", data, 0644))
+		jot.FatalIfErr(os.WriteFile(fs.TrimExtension(p)+".html", data, 0o644))
 	}
 	atexit.Exit(0)
 }
