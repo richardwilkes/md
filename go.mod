@@ -1,17 +1,16 @@
 module github.com/richardwilkes/md
 
-go 1.22.1
+go 1.24.5
 
 require (
 	github.com/mdigger/goldmark-attributes v0.0.0-20210529130523-52da21a6bf2b
 	github.com/mdigger/goldmark-text-replacer v0.0.0-20191226151250-a2119cf037ec
-	github.com/richardwilkes/toolbox v1.106.0
-	github.com/yuin/goldmark v1.7.0
+	github.com/richardwilkes/toolbox/v2 v2.2.0
+	github.com/yuin/goldmark v1.7.12
 )
 
 require (
-	github.com/pkg/term v1.1.0 // indirect
-	golang.org/x/exp v0.0.0-20240318143956-a85f2c67cd81 // indirect
-	golang.org/x/sys v0.18.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
+	golang.org/x/exp v0.0.0-20250711185948-6ae5c78190dc // indirect
+	golang.org/x/sys v0.34.0 // indirect
+	golang.org/x/term v0.33.0 // indirect
 )

@@ -3,7 +3,6 @@ package md
 import (
 	"bytes"
 	"html"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -11,9 +10,9 @@ import (
 
 	attributes "github.com/mdigger/goldmark-attributes"
 	replacer "github.com/mdigger/goldmark-text-replacer"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/xio"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
@@ -50,7 +49,7 @@ type processor struct {
 }
 
 func (p *processor) include(path string) error {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return errs.Wrap(err)
 	}
@@ -127,7 +126,7 @@ func (p *processor) includeRegex(dir, pattern string) error {
 			}
 		}
 	}
-	txt.SortStringsNaturalAscending(names)
+	xstrings.SortStringsNaturalAscending(names)
 	for _, name := range names {
 		if err = p.include(filepath.Join(dir, name)); err != nil {
 			return err
@@ -186,7 +185,7 @@ func (p *processor) markdownToHTML() ([]byte, error) {
 		if p.inlineCSS {
 			buffer.WriteString("	<style>\n")
 			for _, css := range p.css {
-				data, err := ioutil.ReadFile(css)
+				data, err := os.ReadFile(css)
 				if err != nil {
 					return nil, errs.Wrap(err)
 				}
