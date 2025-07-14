@@ -20,7 +20,7 @@ func main() {
 	xos.CopyrightHolder = "Richard A. Wilkes"
 	xos.AppVersion = "1.0"
 	xflag.AddVersionFlags()
-	xflag.SetUsage(nil, "", "")
+	xflag.SetUsage(nil, "", "[file]...")
 	xflag.Parse()
 	for _, p := range flag.Args() {
 		if filepath.Ext(p) != ".md" {
